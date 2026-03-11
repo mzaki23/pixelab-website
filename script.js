@@ -1,6 +1,6 @@
 // API Configuration
 const API_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:3000/api'
+    ? 'https://pixelab-website.vercel.app:3000/api'
     : '/api'; // Vercel akan handle routing
 
 // Portfolio Data (akan di-load dari API)
