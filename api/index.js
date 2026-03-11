@@ -293,4 +293,19 @@ app.get('/api/health', (req, res) => {
     res.json({ success: true, message: 'API is running' });
 });
 
+// Contoh data portfolio
+fetch('/api/portfolio', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    title: 'Project Example',
+    category: 'social-media',
+    image: 'https://images.unsplash.com/...',
+    client: 'Client Name',
+    date: '2025',
+    location: 'Jakarta',
+    description: 'Deskripsi project'
+  })
+});
+
 module.exports = app;
