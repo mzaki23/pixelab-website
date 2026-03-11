@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIXELAB.ID - Creative Digital Agency</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="#home" class="logo">PIXELAB.ID</a>
+            <div class="nav-menu" id="navMenu">
+                <a href="#home" class="nav-link">Home</a>
+                <a href="#services" class="nav-link">Services</a>
+                <a href="#portfolio" class="nav-link">Portfolio</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#contact" class="nav-link">Contact</a>
+                <a href="admin.html" class="nav-link nav-admin">Admin</a>
+            </div>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-ornament ornament-1"></div>
+        <div class="hero-ornament ornament-2"></div>
+        <div class="hero-ornament ornament-3"></div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-label">CREATIVE DIGITAL AGENCY</div>
+                <h1 class="hero-title">
+                    <span class="line">WE CRAFT</span>
+                    <span class="line">VISUAL</span>
+                    <span class="line">STORIES</span>
+                </h1>
+                <p class="hero-subtitle">Social Media Management • Event Documentation • Content Creation</p>
+                <div class="hero-cta">
+                    <a href="#contact" class="btn btn-primary">Start Project</a>
+                    <a href="#portfolio" class="btn btn-secondary">View Works</a>
+                </div>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-number">150+</div>
+                    <div class="stat-label">Projects Done</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">80+</div>
+                    <div class="stat-label">Happy Clients</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">5+</div>
+                    <div class="stat-label">Years Experience</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-number">01</div>
+                <h2 class="section-title">OUR SERVICES</h2>
+            </div>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">📱</div>
+                    <h3 class="service-title">Social Media Management</h3>
+                    <p class="service-desc">Strategi konten, design feed, copywriting, dan scheduling untuk memaksimalkan engagement brand Anda.</p>
+                    <ul class="service-list">
+                        <li>Content Planning & Strategy</li>
+                        <li>Feed Design Instagram</li>
+                        <li>Copywriting & Captions</li>
+                        <li>Analytics & Reporting</li>
+                    </ul>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">📸</div>
+                    <h3 class="service-title">Event Documentation</h3>
+                    <p class="service-desc">Foto dan video dokumentasi profesional untuk acara corporate, launching produk, dan gathering.</p>
+                    <ul class="service-list">
+                        <li>Corporate Events</li>
+                        <li>Product Launching</li>
+                        <li>Conference & Seminar</li>
+                        <li>Team Building</li>
+                    </ul>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">🎬</div>
+                    <h3 class="service-title">Content Creation</h3>
+                    <p class="service-desc">Produksi konten visual berkualitas tinggi dari foto produk hingga video reels yang engaging.</p>
+                    <ul class="service-list">
+                        <li>Product Photography</li>
+                        <li>Reels & TikTok Videos</li>
+                        <li>Commercial Videography</li>
+                        <li>Creative Direction</li>
+                    </ul>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">🎨</div>
+                    <h3 class="service-title">Graphic Design</h3>
+                    <p class="service-desc">Desain visual yang eye-catching untuk semua kebutuhan marketing dan branding Anda.</p>
+                    <ul class="service-list">
+                        <li>Poster & Flyer Design</li>
+                        <li>Infographics</li>
+                        <li>Social Media Templates</li>
+                        <li>Brand Guidelines</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="portfolio">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-number">02</div>
+                <h2 class="section-title">SELECTED WORKS</h2>
+            </div>
+            <div class="portfolio-filter">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="social-media">Social Media</button>
+                <button class="filter-btn" data-filter="event">Event</button>
+                <button class="filter-btn" data-filter="content">Content</button>
+                <button class="filter-btn" data-filter="design">Design</button>
+            </div>
+            <div class="portfolio-grid" id="portfolioGrid">
+                <!-- Portfolio items will be loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-number">03</div>
+                <h2 class="section-title">ABOUT US</h2>
+            </div>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3 class="about-subtitle">WE ARE PIXELAB</h3>
+                    <p class="about-desc">
+                        Creative digital agency yang fokus pada visual storytelling untuk social media dan dokumentasi acara. 
+                        Kami percaya bahwa setiap brand memiliki cerita unik yang layak untuk diceritakan dengan cara yang menarik dan memorable.
+                    </p>
+                    <p class="about-desc">
+                        Dengan tim yang terdiri dari fotografer, videografer, designer, dan content strategist berpengalaman, 
+                        kami siap membantu brand Anda berkembang di era digital.
+                    </p>
+                    <div class="about-values">
+                        <div class="value-item">
+                            <h4>CREATIVE</h4>
+                            <p>Ide-ide fresh dan out of the box</p>
+                        </div>
+                        <div class="value-item">
+                            <h4>QUALITY</h4>
+                            <p>Standar tinggi dalam setiap project</p>
+                        </div>
+                        <div class="value-item">
+                            <h4>RELIABLE</h4>
+                            <p>On-time delivery dan komunikasi jelas</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-team">
+                    <h3 class="team-title">OUR TEAM</h3>
+                    <div class="team-grid">
+                        <div class="team-member">
+                            <div class="team-photo">👨‍💼</div>
+                            <h4 class="team-name">Andi Pratama</h4>
+                            <p class="team-role">Creative Director</p>
+                        </div>
+                        <div class="team-member">
+                            <div class="team-photo">👩‍💼</div>
+                            <h4 class="team-name">Sarah Anggraini</h4>
+                            <p class="team-role">Lead Photographer</p>
+                        </div>
+                        <div class="team-member">
+                            <div class="team-photo">👨‍💼</div>
+                            <h4 class="team-name">Budi Santoso</h4>
+                            <p class="team-role">Video Producer</p>
+                        </div>
+                        <div class="team-member">
+                            <div class="team-photo">👩‍💼</div>
+                            <h4 class="team-name">Lisa Wijaya</h4>
+                            <p class="team-role">Graphic Designer</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+        <div class="container">
+            <h2 class="section-title">CLIENT TESTIMONIALS</h2>
+            <div class="testimonials-grid" id="testimonialsGrid">
+                <!-- Testimonials will be loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-number">04</div>
+                <h2 class="section-title">GET IN TOUCH</h2>
+            </div>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3>LET'S WORK TOGETHER</h3>
+                    <p>Siap untuk membawa brand Anda ke level berikutnya? Mari diskusikan project Anda!</p>
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <strong>Email:</strong>
+                            <a href="mailto:hello@pixelab.id">hello@pixelab.id</a>
+                        </div>
+                        <div class="contact-item">
+                            <strong>WhatsApp:</strong>
+                            <a href="https://wa.me/6281234567890">+62 812-3456-7890</a>
+                        </div>
+                        <div class="contact-item">
+                            <strong>Instagram:</strong>
+                            <a href="https://instagram.com/pixelab.id" target="_blank">@pixelab.id</a>
+                        </div>
+                        <div class="contact-item">
+                            <strong>Location:</strong>
+                            <span>Jakarta, Indonesia</span>
+                        </div>
+                    </div>
+                </div>
+                <form class="contact-form" id="contactForm">
+                    <div class="form-group">
+                        <label for="name">Nama</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="service">Layanan yang Dibutuhkan</label>
+                        <select id="service" name="service" required>
+                            <option value="">Pilih Layanan</option>
+                            <option value="social-media">Social Media Management</option>
+                            <option value="event">Event Documentation</option>
+                            <option value="content">Content Creation</option>
+                            <option value="design">Graphic Design</option>
+                            <option value="other">Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Pesan</label>
+                        <textarea id="message" name="message" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>PIXELAB.ID</h3>
+                    <p>Creative Digital Agency</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#home">Home</a>
+                    <a href="#services">Services</a>
+                    <a href="#portfolio">Portfolio</a>
+                    <a href="#about">About</a>
+                    <a href="#contact">Contact</a>
+                </div>
+                <div class="footer-social">
+                    <a href="https://instagram.com/pixelab.id" target="_blank">Instagram</a>
+                    <a href="https://wa.me/6281234567890">WhatsApp</a>
+                    <a href="mailto:hello@pixelab.id">Email</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 PIXELAB.ID. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Portfolio Detail Modal -->
+    <div id="portfolioDetailModal" class="portfolio-modal">
+        <div class="portfolio-modal-content">
+            <button class="portfolio-modal-close">&times;</button>
+            <div class="portfolio-modal-body">
+                <div class="portfolio-modal-image">
+                    <img id="modalImage" src="" alt="">
+                </div>
+                <div class="portfolio-modal-info">
+                    <div class="modal-category" id="modalCategory"></div>
+                    <h2 class="modal-project-title" id="modalTitle"></h2>
+                    <div class="modal-details">
+                        <div class="detail-item">
+                            <div class="detail-label">CLIENT</div>
+                            <div class="detail-value" id="modalClient"></div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">DATE</div>
+                            <div class="detail-value" id="modalDate"></div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">LOCATION</div>
+                            <div class="detail-value" id="modalLocation"></div>
+                        </div>
+                    </div>
+                    <div class="modal-description">
+                        <h3>DESCRIPTION</h3>
+                        <p id="modalDescription"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

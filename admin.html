@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - PIXELAB.ID</title>
+    <link rel="stylesheet" href="admin-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <h1 class="login-title">PIXELAB ADMIN</h1>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+                <p class="login-hint">Default: admin / admin123</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="dashboard" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>PIXELAB.ID</h2>
+                <p class="sidebar-subtitle">Admin Dashboard</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="overview">
+                    <span class="nav-icon">📊</span>
+                    <span>Overview</span>
+                </a>
+                <a href="#" class="nav-item" data-section="portfolio">
+                    <span class="nav-icon">🖼️</span>
+                    <span>Portfolio</span>
+                </a>
+                <a href="#" class="nav-item" data-section="testimonials">
+                    <span class="nav-icon">💬</span>
+                    <span>Testimonials</span>
+                </a>
+                <a href="#" class="nav-item" data-section="messages">
+                    <span class="nav-icon">📧</span>
+                    <span>Messages</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1 id="pageTitle">Dashboard Overview</h1>
+                <div class="header-actions">
+                    <a href="index.html" class="btn btn-secondary" target="_blank">View Website</a>
+                </div>
+            </header>
+
+            <!-- Overview Section -->
+            <section id="overviewSection" class="content-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🖼️</div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="totalProjects">0</div>
+                            <div class="stat-label">Total Projects</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💬</div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="totalTestimonials">0</div>
+                            <div class="stat-label">Testimonials</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📧</div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="totalMessages">0</div>
+                            <div class="stat-label">New Messages</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-content">
+                            <div class="stat-number">150+</div>
+                            <div class="stat-label">Happy Clients</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-activity">
+                    <h2 class="section-title">Recent Messages</h2>
+                    <div id="recentMessages" class="activity-list"></div>
+                </div>
+            </section>
+
+            <!-- Portfolio Section -->
+            <section id="portfolioSection" class="content-section" style="display: none;">
+                <div class="section-actions">
+                    <button id="addPortfolioBtn" class="btn btn-primary">+ Add New Project</button>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Image</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="portfolioTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Testimonials Section -->
+            <section id="testimonialsSection" class="content-section" style="display: none;">
+                <div class="section-actions">
+                    <button id="addTestimonialBtn" class="btn btn-primary">+ Add Testimonial</button>
+                </div>
+
+                <div class="testimonials-list" id="testimonialsList"></div>
+            </section>
+
+            <!-- Messages Section -->
+            <section id="messagesSection" class="content-section" style="display: none;">
+                <div class="messages-list" id="messagesList"></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for Adding/Editing Portfolio -->
+    <div id="portfolioModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="portfolioModalTitle">Add New Project</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="portfolioForm">
+                <div class="form-group">
+                    <label for="portfolioTitle">Project Title</label>
+                    <input type="text" id="portfolioTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="portfolioCategory">Category</label>
+                    <select id="portfolioCategory" required>
+                        <option value="social-media">Social Media</option>
+                        <option value="event">Event</option>
+                        <option value="content">Content</option>
+                        <option value="design">Design</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="portfolioImage">Image URL</label>
+                    <input type="url" id="portfolioImage" required>
+                </div>
+                <div class="form-group">
+                    <label for="portfolioClient">Client Name</label>
+                    <input type="text" id="portfolioClient" required>
+                </div>
+                <div class="form-group">
+                    <label for="portfolioDate">Project Date</label>
+                    <input type="text" id="portfolioDate" placeholder="e.g., 15 Januari 2024" required>
+                </div>
+                <div class="form-group">
+                    <label for="portfolioLocation">Location</label>
+                    <input type="text" id="portfolioLocation" placeholder="e.g., Jakarta, Indonesia" required>
+                </div>
+                <div class="form-group">
+                    <label for="portfolioDescription">Description</label>
+                    <textarea id="portfolioDescription" rows="4" required></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Adding/Editing Testimonials -->
+    <div id="testimonialModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="testimonialModalTitle">Add Testimonial</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="testimonialForm">
+                <div class="form-group">
+                    <label for="testimonialText">Testimonial Text</label>
+                    <textarea id="testimonialText" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="testimonialAuthor">Author Name</label>
+                    <input type="text" id="testimonialAuthor" required>
+                </div>
+                <div class="form-group">
+                    <label for="testimonialCompany">Company/Position</label>
+                    <input type="text" id="testimonialCompany" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Testimonial</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin-script.js"></script>
+</body>
+</html>
