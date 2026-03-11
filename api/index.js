@@ -1,40 +1,48 @@
 const express = require('express');
+const { MongoClient } = require('mongodb');
+const cors = require('cors');
+
 const app = express();
+app.use(cors());
+app.use(express.json());
 
-app.get('/api/portfolio', (req, res) => {
-  res.json({ success: true, data: [] });
-});
+// 1. DEFINISIKAN FUNGSI TERLEBIH DAHULU
+let cachedDb = null;
+let cachedClient = null;
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
+async function connectToDatabase() {
+  if (cachedDb) return { client: cachedClient, db: cachedDb };
 
-// Endpoint untuk tes koneksi database
+  const client = new MongoClient(process.env.MONGODB_URI);
+  await client.connect();
+  const db = client.db(); // atau client.db('nama_database')
+  
+  cachedClient = client;
+  cachedDb = db;
+  return { client, db };
+}
+
+// 2. BARU SETELAH ITU TAMBAHKAN ENDPOINT
 app.get('/api/test-db', async (req, res) => {
   try {
     const { db } = await connectToDatabase();
-    
-    // Coba lakukan ping ke database
     await db.command({ ping: 1 });
-    
-    // (Opsional) Coba hitung jumlah dokumen di koleksi portfolio
     const portfolioCount = await db.collection('portfolio').countDocuments();
-    
     res.json({
       success: true,
-      message: 'Database connection successful',
-      mongodb_uri_set: !!process.env.MONGODB_URI,
-      portfolio_count: portfolioCount
+      message: 'Koneksi database berhasil',
+      portfolio_count: portfolioCount,
     });
   } catch (error) {
-    console.error('Database connection error:', error);
+    console.error('❌ Error koneksi:', error);
     res.status(500).json({
       success: false,
-      message: 'Database connection failed',
+      message: 'Koneksi database gagal',
       error: error.message,
-      mongodb_uri_set: !!process.env.MONGODB_URI
     });
   }
 });
+
+// Endpoint lain (portfolio, testimonials, dll) di sini...
 
 module.exports = app;
