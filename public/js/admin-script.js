@@ -826,53 +826,111 @@ function printInvoice() {
 
 async function downloadInvoice() {
     try {
-        // Show loading
-        const previewContent = document.getElementById('invoicePreviewContent');
-        const originalHTML = previewContent.innerHTML;
-        
-        // Notify user
         const downloadBtn = event.target;
         const originalText = downloadBtn.textContent;
         downloadBtn.textContent = '⏳ Generating PDF...';
         downloadBtn.disabled = true;
+
+        const previewElement = document.getElementById('invoicePreviewContent');
         
-        // Use html2canvas to capture the invoice
-        const canvas = await html2canvas(previewContent, {
-            scale: 2,
+        // 1. Clone elemen preview
+        const clone = previewElement.cloneNode(true);
+        
+        // 2. Buat container tersembunyi dengan lebar tetap (A4 width at 96dpi)
+        const hiddenContainer = document.createElement('div');
+        hiddenContainer.style.position = 'absolute';
+        hiddenContainer.style.left = '-9999px';
+        hiddenContainer.style.top = '0';
+        hiddenContainer.style.width = '794px'; // Lebar A4 dalam pixel (210mm ≈ 794px pada 96dpi)
+        hiddenContainer.style.backgroundColor = '#ffffff';
+        hiddenContainer.style.padding = '0';
+        hiddenContainer.style.margin = '0';
+        hiddenContainer.style.boxSizing = 'border-box';
+        
+        // Pastikan clone memiliki gaya yang sama seperti aslinya, tetapi dengan lebar penuh
+        clone.style.width = '100%';
+        clone.style.maxWidth = 'none';
+        clone.style.margin = '0';
+        clone.style.padding = '3rem'; // sesuaikan jika perlu
+        clone.style.boxSizing = 'border-box';
+        
+        hiddenContainer.appendChild(clone);
+        document.body.appendChild(hiddenContainer);
+
+        // 3. Capture dengan html2canvas
+        const canvas = await html2canvas(clone, {
+            scale: 2,               // resolusi tinggi
             useCORS: true,
             logging: false,
-            backgroundColor: '#ffffff'
+            backgroundColor: '#ffffff',
+            windowWidth: 794,
+            width: 794
         });
-        
-        // Convert to PDF using jsPDF
+
+        // 4. Hapus container tersembunyi
+        document.body.removeChild(hiddenContainer);
+
+        // 5. Buat PDF ukuran A4
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
             format: 'a4'
         });
-        
+
         const imgData = canvas.toDataURL('image/png');
-        const imgWidth = 210; // A4 width in mm
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        
-        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-        
-        // Get invoice number from preview
-        const invoiceNumber = previewContent.querySelector('.invoice-number strong').textContent;
-        
-        // Download
+        const pdfWidth = pdf.internal.pageSize.getWidth();   // 210 mm
+        const pdfHeight = pdf.internal.pageSize.getHeight(); // 297 mm
+
+        // Hitung tinggi gambar dalam mm agar proporsional
+        const imgWidth = pdfWidth;
+        const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        // Jika tinggi gambar melebihi tinggi halaman, bagi ke beberapa halaman
+        let yOffset = 0;
+        let remainingHeight = imgHeight;
+        let pageIndex = 0;
+
+        while (remainingHeight > 0) {
+            if (pageIndex > 0) {
+                pdf.addPage();
+            }
+
+            const pageHeight = pdfHeight;
+            const sourceHeight = Math.min(remainingHeight, pageHeight);
+            const sourceY = yOffset;
+
+            // Potong canvas sesuai bagian yang akan ditampilkan di halaman ini
+            const pageCanvas = document.createElement('canvas');
+            pageCanvas.width = canvas.width;
+            pageCanvas.height = (sourceHeight * canvas.width) / pdfWidth; // tinggi dalam pixel
+            const ctx = pageCanvas.getContext('2d');
+            ctx.drawImage(canvas, 0, sourceY * (canvas.width / pdfWidth), canvas.width, pageCanvas.height, 0, 0, pageCanvas.width, pageCanvas.height);
+
+            const pageImgData = pageCanvas.toDataURL('image/png');
+            pdf.addImage(pageImgData, 'PNG', 0, 0, pdfWidth, sourceHeight, undefined, 'FAST');
+
+            yOffset += pageHeight;
+            remainingHeight -= pageHeight;
+            pageIndex++;
+        }
+
+        // 6. Ambil nomor invoice untuk nama file
+        const invoiceNumberEl = previewElement.querySelector('.invoice-number strong');
+        const invoiceNumber = invoiceNumberEl ? invoiceNumberEl.textContent : 'invoice';
+
         pdf.save(`${invoiceNumber}.pdf`);
-        
-        // Reset button
+
         downloadBtn.textContent = originalText;
         downloadBtn.disabled = false;
-        
+
     } catch (error) {
         console.error('Error generating PDF:', error);
-        alert('Failed to generate PDF. Please try Print instead.');
-        event.target.textContent = '📥 Download PDF';
-        event.target.disabled = false;
+        alert('Gagal membuat PDF. Silakan gunakan fitur Print.');
+        if (event && event.target) {
+            event.target.textContent = '📥 Download PDF';
+            event.target.disabled = false;
+        }
     }
 }
 
