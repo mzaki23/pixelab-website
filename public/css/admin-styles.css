@@ -696,6 +696,20 @@ body {
     border-color: var(--color-gray-600);
 }
 
+/* ============= INVOICE PREVIEW RESPONSIVE ============= */
+.invoice-preview {
+    max-width: 900px;  /* Lebar maksimum seperti A4 */
+    margin: 0 auto;
+    background: white;
+    padding: 3rem;
+    font-size: 14px;
+    line-height: 1.6;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    overflow-x: auto;  /* Mencegah konten keluar dari container */
+}
+
+
+
 /* Invoice Preview */
 .invoice-preview-actions {
     padding: 1rem 2rem;
@@ -823,6 +837,67 @@ body {
     font-size: 0.875rem;
     text-transform: uppercase;
     margin-bottom: 0.5rem;
+}
+
+
+/* Tampilan mobile */
+@media (max-width: 768px) {
+    .invoice-preview {
+        padding: 1.5rem;
+        font-size: 12px;
+        max-width: 100%;
+    }
+    
+    /* Ubah layout header menjadi vertikal */
+    .invoice-header {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .invoice-number {
+        text-align: left;
+    }
+    
+    /* Informasi client dan project vertikal */
+    .invoice-info {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    /* Tabel bisa di-scroll horizontal jika terlalu lebar */
+    .invoice-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;  /* Agar kolom tidak turun */
+        font-size: 12px;
+    }
+    
+    .invoice-table th,
+    .invoice-table td {
+        padding: 0.5rem;
+        min-width: 100px;  /* Minimum lebar kolom */
+    }
+    
+    /* Penyesuaian lainnya */
+    .invoice-summary {
+        margin-top: 1.5rem;
+    }
+    
+    .invoice-footer {
+        margin-top: 1.5rem;
+    }
+}
+
+/* Tampilan tablet */
+@media (min-width: 769px) and (max-width: 968px) {
+    .invoice-preview {
+        padding: 2rem;
+    }
+    
+    .invoice-table {
+        font-size: 13px;
+    }
 }
 
 @media print {
