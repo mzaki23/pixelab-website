@@ -825,98 +825,96 @@ body {
     margin-bottom: 0.5rem;
 }
 
-/* Print Styles */
 @media print {
+    /* Sembunyikan semua elemen yang tidak diperlukan */
     body * {
         visibility: hidden;
     }
     
+    /* Tampilkan hanya modal preview dan isinya */
     #invoicePreviewModal,
+    #invoicePreviewModal .modal-content,
+    #invoicePreviewModal .invoice-preview,
     #invoicePreviewModal * {
         visibility: visible;
     }
     
+    /* Atur posisi dan ukuran modal agar full page tanpa scroll */
     #invoicePreviewModal {
-        position: fixed;
+        position: absolute;
         left: 0;
         top: 0;
         width: 100%;
-        height: 100%;
+        height: auto;
+        min-height: 100%;
         background: white;
         z-index: 9999;
+        overflow: visible;
+        padding: 0;
+        margin: 0;
+        border: none;
     }
     
+    /* Pastikan konten modal tidak memiliki batasan tinggi */
+    #invoicePreviewModal .modal-content {
+        max-height: none !important;
+        overflow: visible !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+    
+    /* Sembunyikan elemen header dan tombol */
     .modal-header,
     .invoice-preview-actions,
     .modal-close {
         display: none !important;
     }
     
-    .modal-content {
-        border: none !important;
-        max-width: 100% !important;
-        box-shadow: none !important;
-    }
-    
+    /* Atur tampilan invoice preview */
     .invoice-preview {
         padding: 20mm;
         background: white;
         page-break-after: avoid;
+        font-size: 12pt;
+        line-height: 1.4;
     }
     
-    .invoice-header {
-        border-bottom: 3px solid #000;
-        page-break-inside: avoid;
+    /* Pastikan body dan html tidak membatasi tinggi */
+    body, html {
+        overflow: visible;
+        height: auto;
+        margin: 0;
+        padding: 0;
     }
     
+    /* Pengaturan tabel agar tidak terpotong antar halaman */
     .invoice-table {
         page-break-inside: auto;
     }
-    
     .invoice-table tr {
         page-break-inside: avoid;
         page-break-after: auto;
     }
-    
     .invoice-table thead {
         display: table-header-group;
     }
-    
     .invoice-table tfoot {
         display: table-footer-group;
     }
     
-    /* Remove box shadows and transitions for print */
-    * {
-        box-shadow: none !important;
-        transition: none !important;
-        animation: none !important;
-    }
-    
-    /* Ensure black text prints properly */
-    .invoice-table th {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        background: #000 !important;
-        color: #fff !important;
-    }
-    
+    /* Warna tetap tercetak */
+    .invoice-table th,
     .invoice-status {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
     
-    /* Better spacing for print */
-    .invoice-info {
-        margin-bottom: 15mm;
-    }
-    
-    .invoice-table {
-        margin: 15mm 0;
-    }
-    
-    .invoice-footer {
-        margin-top: 15mm;
+    /* Hilangkan semua efek bayangan dan transisi */
+    * {
+        box-shadow: none !important;
+        transition: none !important;
+        animation: none !important;
     }
 }
 
