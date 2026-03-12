@@ -827,42 +827,112 @@ function printInvoice() {
 async function downloadInvoice() {
     try {
         const downloadBtn = event.target;
+        const originalText = downloadBtn.textContent;
         downloadBtn.textContent = '⏳ Generating PDF...';
         downloadBtn.disabled = true;
 
-        // ... (ambil data dari preview seperti sebelumnya) ...
+        // Ambil elemen preview invoice
+        const preview = document.getElementById('invoicePreviewContent');
+        if (!preview) throw new Error('Preview element not found');
 
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const margin = 20;
-        let y = margin;
+        // --- Ekstrak data dari elemen preview ---
+        // Invoice number
+        const invoiceNumberEl = preview.querySelector('.invoice-number strong');
+        const invoiceNumber = invoiceNumberEl ? invoiceNumberEl.textContent.trim() : 'INV-0001';
 
-        // === LOAD LOGO ===
-        // Ganti bagian logoBase64 dengan:
-let logoBase64 = null;
-try {
-    const response = await fetch('/assets/logo.png');
-    const blob = await response.blob();
-    logoBase64 = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(blob);
-    });
-} catch (e) {
-    console.warn('Gagal memuat PNG', e);
-}
+        // Tanggal
+        const dateTexts = preview.querySelectorAll('.invoice-number p');
+        let invoiceDate = '', dueDate = '';
+        dateTexts.forEach(p => {
+            const text = p.textContent;
+            if (text.startsWith('Date:')) invoiceDate = text.replace('Date:', '').trim();
+            if (text.startsWith('Due:')) dueDate = text.replace('Due:', '').trim();
+        });
 
-        // === HEADER ===
-        if (logoBase64) {
-            pdf.addImage(logoBase64, 'PNG', margin, y, 60, 20); // ukuran mm
-            y += 22;
-        } else {
-            pdf.setFontSize(24);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text('PIXELAB.ID', margin, y);
-            y += 8;
+        // Status
+        const statusEl = preview.querySelector('.invoice-status');
+        const status = statusEl ? statusEl.textContent.trim() : '';
+
+        // Client Info
+        const infoBlocks = preview.querySelectorAll('.info-block');
+        let clientName = '', clientEmail = '', clientPhone = '', clientAddress = '', projectName = '';
+
+        if (infoBlocks.length >= 2) {
+            // Block pertama: Bill To
+            const billToBlock = infoBlocks[0];
+            const billToPs = billToBlock.querySelectorAll('p');
+            if (billToPs.length >= 1) clientName = billToPs[0]?.querySelector('strong')?.textContent || billToPs[0]?.textContent || '';
+            if (billToPs.length >= 2) clientEmail = billToPs[1]?.textContent || '';
+            if (billToPs.length >= 3) clientPhone = billToPs[2]?.textContent || '';
+            if (billToPs.length >= 4) clientAddress = billToPs[3]?.textContent || '';
+
+            // Block kedua: Project
+            const projectBlock = infoBlocks[1];
+            const projectStrong = projectBlock.querySelector('p strong');
+            projectName = projectStrong ? projectStrong.textContent : '';
         }
 
+        // Items dari tabel
+        const rows = preview.querySelectorAll('.invoice-table tbody tr');
+        const items = [];
+        rows.forEach(row => {
+            const cols = row.querySelectorAll('td');
+            if (cols.length >= 4) {
+                items.push({
+                    description: cols[0].textContent.trim(),
+                    quantity: cols[1].textContent.trim(),
+                    price: cols[2].textContent.trim(),
+                    amount: cols[3].textContent.trim()
+                });
+            }
+        });
+
+        // Total dari footer tabel
+        const footRows = preview.querySelectorAll('.invoice-table tfoot tr');
+        let subtotal = 'Rp 0', tax = 'Rp 0', total = 'Rp 0';
+        footRows.forEach((row, index) => {
+            const cells = row.querySelectorAll('td');
+            if (cells.length >= 2) {
+                const label = cells[0].textContent.trim();
+                const value = cells[1].textContent.trim();
+                if (label.includes('Subtotal')) subtotal = value;
+                else if (label.includes('Tax')) tax = value;
+                else if (label.includes('TOTAL')) total = value;
+            }
+        });
+
+        // Notes
+        const notesEl = preview.querySelector('.invoice-notes p');
+        const notes = notesEl ? notesEl.textContent.trim() : '';
+
+        // --- Inisialisasi jsPDF ---
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const margin = 20;
+        const rightX = pageWidth - margin;
+        let y = margin;
+
+        // Fungsi helper untuk teks wrap
+        function addWrappedText(text, x, y, maxWidth, options = {}) {
+            const lines = pdf.splitTextToSize(text, maxWidth);
+            pdf.setFontSize(options.fontSize || 11);
+            pdf.setFont(options.font || 'helvetica', options.style || 'normal');
+            pdf.setTextColor(options.color || 0);
+            pdf.text(lines, x, y);
+            return y + (lines.length * (options.lineHeight || 5));
+        }
+
+        // --- HEADER: Logo Teks dan Info Perusahaan ---
+        pdf.setFontSize(24);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('PIXELAB.ID', margin, y);
+        y += 8;
         pdf.setFontSize(9);
         pdf.setFont('helvetica', 'normal');
         pdf.text('Creative Digital Agency', margin, y);
@@ -872,17 +942,149 @@ try {
         pdf.text('Email: hello@pixelab.id', margin, y);
         y += 5;
         pdf.text('Phone: +62 812-3456-7890', margin, y);
+
+        // --- HEADER KANAN: INVOICE dan tanggal ---
+        pdf.setFontSize(16);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('INVOICE', rightX, margin, { align: 'right' });
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`No. ${invoiceNumber}`, rightX, margin + 10, { align: 'right' });
+        pdf.text(`Date: ${invoiceDate}`, rightX, margin + 15, { align: 'right' });
+        pdf.text(`Due: ${dueDate}`, rightX, margin + 20, { align: 'right' });
+
+        // Status badge
+        if (status) {
+            pdf.setFillColor(220, 220, 220);
+            pdf.roundedRect(rightX - 40, margin + 25, 40, 8, 2, 2, 'F');
+            pdf.setTextColor(0);
+            pdf.setFontSize(8);
+            pdf.text(status, rightX - 20, margin + 30, { align: 'center' });
+        }
+
+        y += 25;
+        pdf.line(margin, y, pageWidth - margin, y);
         y += 10;
 
-        // ... sisanya sama seperti kode sebelumnya ...
+        // --- BILL TO & PROJECT ---
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('BILL TO:', margin, y);
+        pdf.text('PROJECT:', pageWidth / 2, y);
+        y += 6;
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+
+        let billToY = y;
+        if (clientName) {
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(clientName, margin, billToY);
+            pdf.setFont('helvetica', 'normal');
+            billToY += 5;
+        }
+        if (clientEmail) {
+            pdf.text(clientEmail, margin, billToY);
+            billToY += 5;
+        }
+        if (clientPhone) {
+            pdf.text(clientPhone, margin, billToY);
+            billToY += 5;
+        }
+        if (clientAddress) {
+            billToY = addWrappedText(clientAddress, margin, billToY, pageWidth/2 - 20, { fontSize: 10 });
+        }
+
+        let projectY = y;
+        if (projectName) {
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(projectName, pageWidth / 2, projectY);
+            pdf.setFont('helvetica', 'normal');
+        }
+
+        y = Math.max(billToY, projectY + 5) + 10;
+
+        // --- TABEL ITEM ---
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFillColor(0);
+        pdf.setTextColor(255);
+        pdf.rect(margin, y - 4, pageWidth - 2*margin, 8, 'F');
+        pdf.text('DESCRIPTION', margin + 2, y);
+        pdf.text('QTY', margin + 100, y);
+        pdf.text('PRICE', margin + 130, y);
+        pdf.text('AMOUNT', margin + 160, y);
+        y += 8;
+        pdf.setTextColor(0);
+        pdf.setFont('helvetica', 'normal');
+
+        items.forEach((item) => {
+            if (y > 270) {
+                pdf.addPage();
+                y = margin;
+                pdf.setFontSize(10);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFillColor(0);
+                pdf.setTextColor(255);
+                pdf.rect(margin, y - 4, pageWidth - 2*margin, 8, 'F');
+                pdf.text('DESCRIPTION', margin + 2, y);
+                pdf.text('QTY', margin + 100, y);
+                pdf.text('PRICE', margin + 130, y);
+                pdf.text('AMOUNT', margin + 160, y);
+                y += 8;
+                pdf.setTextColor(0);
+                pdf.setFont('helvetica', 'normal');
+            }
+
+            pdf.text(item.description, margin + 2, y, { maxWidth: 90 });
+            pdf.text(item.quantity, margin + 100, y, { align: 'center' });
+            pdf.text(item.price, margin + 130, y);
+            pdf.text(item.amount, margin + 160, y);
+            y += 6;
+        });
+
+        y += 5;
+        pdf.line(margin, y, pageWidth - margin, y);
+        y += 5;
+
+        // --- SUBTOTAL, TAX, TOTAL ---
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Subtotal:', pageWidth - margin - 60, y);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(subtotal, pageWidth - margin - 10, y, { align: 'right' });
+        y += 6;
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Tax (11%):', pageWidth - margin - 60, y);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(tax, pageWidth - margin - 10, y, { align: 'right' });
+        y += 6;
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.text('TOTAL:', pageWidth - margin - 60, y);
+        pdf.text(total, pageWidth - margin - 10, y, { align: 'right' });
+        y += 15;
+
+        if (notes) {
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Notes:', margin, y);
+            y += 5;
+            pdf.setFont('helvetica', 'normal');
+            y = addWrappedText(notes, margin, y, pageWidth - 2*margin, { fontSize: 10 });
+        }
+
+        pdf.setFontSize(9);
+        pdf.setTextColor(150);
+        pdf.text('Thank you for your business!', pageWidth/2, 280, { align: 'center' });
 
         pdf.save(`${invoiceNumber}.pdf`);
-        downloadBtn.textContent = '📥 Download PDF';
+        downloadBtn.textContent = originalText;
         downloadBtn.disabled = false;
+
     } catch (error) {
-        console.error(error);
-        alert('Gagal membuat PDF');
-        if (event.target) {
+        console.error('Error generating PDF:', error);
+        alert('Gagal membuat PDF. Silakan gunakan fitur Print.');
+        if (event && event.target) {
             event.target.textContent = '📥 Download PDF';
             event.target.disabled = false;
         }
