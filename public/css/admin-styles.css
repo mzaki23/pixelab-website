@@ -99,6 +99,8 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
+    padding: 2rem;               /* ← tambahkan ini */
+    border-bottom: 2px solid var(--color-gray-800); /* ← tambahkan ini */
 }
 
 .sidebar-logo {
