@@ -827,117 +827,71 @@ function printInvoice() {
 async function downloadInvoice() {
     try {
         const downloadBtn = event.target;
-        const originalText = downloadBtn.textContent;
         downloadBtn.textContent = '⏳ Generating PDF...';
         downloadBtn.disabled = true;
 
-        const previewElement = document.getElementById('invoicePreviewContent');
-        
-        // 1. Clone elemen preview
-        const clone = previewElement.cloneNode(true);
-        
-        // 2. Ganti semua gambar eksternal dengan inline SVG (jika ada)
-        //    Jika logo Anda sudah berupa inline SVG, pastikan tidak ada <img>
-        //    Jika masih pakai <img>, Anda perlu menggantinya dengan inline SVG seperti langkah sebelumnya.
+        // ... (ambil data dari preview seperti sebelumnya) ...
 
-        // 3. Buat container tersembunyi dengan lebar A4 (794px)
-        const hiddenContainer = document.createElement('div');
-        hiddenContainer.style.position = 'absolute';
-        hiddenContainer.style.left = '-9999px';
-        hiddenContainer.style.top = '0';
-        hiddenContainer.style.width = '794px';
-        hiddenContainer.style.backgroundColor = '#ffffff';
-        hiddenContainer.style.padding = '0';
-        hiddenContainer.style.margin = '0';
-        hiddenContainer.style.boxSizing = 'border-box';
-        
-        // Atur gaya clone agar muat persis di container
-        clone.style.width = '100%';
-        clone.style.maxWidth = 'none';
-        clone.style.margin = '0';
-        clone.style.padding = '3rem';
-        clone.style.boxSizing = 'border-box';
-        clone.style.backgroundColor = '#ffffff';
-        
-        hiddenContainer.appendChild(clone);
-        document.body.appendChild(hiddenContainer);
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const margin = 20;
+        let y = margin;
 
-        // 4. Capture dengan html2canvas (pastikan SVG inline tercapture sempurna)
-        const canvas = await html2canvas(clone, {
-            scale: 2,               // resolusi tinggi
-            useCORS: true,
-            allowTaint: false,
-            logging: false,
-            backgroundColor: '#ffffff',
-            windowWidth: 794,
-            width: 794
-        });
-
-        // 5. Hapus container tersembunyi
-        document.body.removeChild(hiddenContainer);
-
-        // 6. Buat PDF ukuran A4
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4'
-        });
-
-        const pageWidthMm = pdf.internal.pageSize.getWidth();   // 210 mm
-        const pageHeightMm = pdf.internal.pageSize.getHeight(); // 297 mm
-
-        const canvasWidthPx = canvas.width;
-        const canvasHeightPx = canvas.height;
-        
-        // Hitung rasio piksel per mm
-        const pxPerMm = canvasWidthPx / pageWidthMm;
-        const totalHeightMm = canvasHeightPx / pxPerMm;
-
-        let currentMm = 0;
-        let pageIndex = 0;
-
-        while (currentMm < totalHeightMm) {
-            if (pageIndex > 0) pdf.addPage();
-
-            const remainingMm = totalHeightMm - currentMm;
-            const thisPageMm = Math.min(remainingMm, pageHeightMm);
-            const thisPagePx = Math.round(thisPageMm * pxPerMm); // tinggi dalam piksel untuk halaman ini
-
-            // Buat canvas baru untuk halaman ini
-            const pageCanvas = document.createElement('canvas');
-            pageCanvas.width = canvasWidthPx;
-            pageCanvas.height = thisPagePx;
-            const ctx = pageCanvas.getContext('2d');
-            
-            // Gambar bagian yang sesuai dari canvas asli
-            ctx.drawImage(
-                canvas,
-                0, currentMm * pxPerMm,          // source x, y (dalam piksel)
-                canvasWidthPx, thisPagePx,        // source width, height
-                0, 0,                              // dest x, y
-                canvasWidthPx, thisPagePx          // dest width, height
-            );
-
-            const pageImgData = pageCanvas.toDataURL('image/png');
-            pdf.addImage(pageImgData, 'PNG', 0, 0, pageWidthMm, thisPageMm, undefined, 'FAST');
-
-            currentMm += thisPageMm;
-            pageIndex++;
+        // === LOAD LOGO ===
+        let logoBase64 = null;
+        try {
+            // Fungsi konversi SVG ke PNG
+            function svgToPng(svgUrl, width, height) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = 'Anonymous';
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/png'));
+                    };
+                    img.onerror = reject;
+                    img.src = svgUrl;
+                });
+            }
+            logoBase64 = await svgToPng('/assets/Logo.svg', 120, 40); // ukuran pixel
+        } catch (e) {
+            console.warn('Logo gagal dimuat, gunakan teks', e);
         }
 
-        // 7. Simpan PDF dengan nomor invoice
-        const invoiceNumberEl = previewElement.querySelector('.invoice-number strong');
-        const invoiceNumber = invoiceNumberEl ? invoiceNumberEl.textContent : 'invoice';
+        // === HEADER ===
+        if (logoBase64) {
+            pdf.addImage(logoBase64, 'PNG', margin, y, 60, 20); // ukuran mm
+            y += 22;
+        } else {
+            pdf.setFontSize(24);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('PIXELAB.ID', margin, y);
+            y += 8;
+        }
+
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('Creative Digital Agency', margin, y);
+        y += 5;
+        pdf.text('Jakarta, Indonesia', margin, y);
+        y += 5;
+        pdf.text('Email: hello@pixelab.id', margin, y);
+        y += 5;
+        pdf.text('Phone: +62 812-3456-7890', margin, y);
+        y += 10;
+
+        // ... sisanya sama seperti kode sebelumnya ...
+
         pdf.save(`${invoiceNumber}.pdf`);
-
-        downloadBtn.textContent = originalText;
+        downloadBtn.textContent = '📥 Download PDF';
         downloadBtn.disabled = false;
-
     } catch (error) {
-        console.error('Error generating PDF:', error);
-        alert('Gagal membuat PDF. Silakan gunakan fitur Print.');
-        if (event && event.target) {
+        console.error(error);
+        alert('Gagal membuat PDF');
+        if (event.target) {
             event.target.textContent = '📥 Download PDF';
             event.target.disabled = false;
         }
