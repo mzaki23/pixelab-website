@@ -812,7 +812,16 @@ async function deleteInvoice(id) {
 }
 
 function printInvoice() {
+    // Add print-specific class to body
+    document.body.classList.add('printing-invoice');
+    
+    // Trigger print
     window.print();
+    
+    // Remove class after print dialog closes
+    setTimeout(() => {
+        document.body.classList.remove('printing-invoice');
+    }, 1000);
 }
 
 async function downloadInvoice() {
