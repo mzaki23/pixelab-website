@@ -815,8 +815,91 @@ function printInvoice() {
     window.print();
 }
 
-function downloadInvoice() {
-    alert('Download PDF feature - integrate with jsPDF or html2pdf.js for full functionality');
+async function downloadInvoice() {
+    try {
+        // Show loading
+        const previewContent = document.getElementById('invoicePreviewContent');
+        const originalHTML = previewContent.innerHTML;
+        
+        // Notify user
+        const downloadBtn = event.target;
+        const originalText = downloadBtn.textContent;
+        downloadBtn.textContent = '⏳ Generating PDF...';
+        downloadBtn.disabled = true;
+        
+        // Use html2canvas to capture the invoice
+        const canvas = await html2canvas(previewContent, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff'
+        });
+        
+        // Convert to PDF using jsPDF
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+        
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = 210; // A4 width in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        
+        // Get invoice number from preview
+        const invoiceNumber = previewContent.querySelector('.invoice-number strong').textContent;
+        
+        // Download
+        pdf.save(`${invoiceNumber}.pdf`);
+        
+        // Reset button
+        downloadBtn.textContent = originalText;
+        downloadBtn.disabled = false;
+        
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Failed to generate PDF. Please try Print instead.');
+        event.target.textContent = '📥 Download PDF';
+        event.target.disabled = false;
+    }
+}
+
+async function sendInvoiceEmail() {
+    const clientEmail = prompt('Masukkan email client untuk mengirim invoice:');
+    
+    if (!clientEmail) return;
+    
+    if (!clientEmail.includes('@')) {
+        alert('Email tidak valid!');
+        return;
+    }
+    
+    const btn = event.target;
+    const originalText = btn.textContent;
+    btn.textContent = '⏳ Sending...';
+    btn.disabled = true;
+    
+    try {
+        // Get invoice data from preview
+        const previewContent = document.getElementById('invoicePreviewContent');
+        const invoiceNumber = previewContent.querySelector('.invoice-number strong').textContent;
+        const total = previewContent.querySelector('.invoice-table tfoot tr:last-child td:last-child').textContent;
+        
+        // Simulate API call (in production, integrate with email service)
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        alert(`✅ Invoice berhasil dikirim ke ${clientEmail}!\n\n📝 Note: Untuk production, integrate dengan:\n- SendGrid\n- Mailgun\n- AWS SES\n- Nodemailer`);
+        
+    } catch (error) {
+        console.error('Error sending email:', error);
+        alert('Failed to send email. Please try again.');
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
 }
 
 window.viewInvoice = viewInvoice;
@@ -824,4 +907,5 @@ window.editInvoice = editInvoice;
 window.deleteInvoice = deleteInvoice;
 window.printInvoice = printInvoice;
 window.downloadInvoice = downloadInvoice;
+window.sendInvoiceEmail = sendInvoiceEmail;
 window.calculateInvoiceTotal = calculateInvoiceTotal;

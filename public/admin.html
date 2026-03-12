@@ -369,12 +369,17 @@
             </div>
             <div class="invoice-preview-actions">
                 <button class="btn btn-primary" onclick="printInvoice()">🖨️ Print / Save PDF</button>
-                <button class="btn btn-secondary" onclick="downloadInvoice()">📥 Download</button>
+                <button class="btn btn-primary" onclick="downloadInvoice()">📥 Download PDF</button>
+                <button class="btn btn-secondary" onclick="sendInvoiceEmail()">📧 Send Email</button>
             </div>
             <div id="invoicePreviewContent" class="invoice-preview"></div>
         </div>
     </div>
 
     <script src="/js/admin-script.js"></script>
+
+        <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 </html>
