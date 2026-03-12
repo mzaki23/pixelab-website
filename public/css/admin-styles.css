@@ -737,9 +737,9 @@ body {
 }
 
 .invoice-logo-img {
-    height: 40px;        /* sesuaikan dengan kebutuhan */
+    height: 40px;
     width: auto;
-    object-fit: contain;
+    max-width: 200px; /* agar tidak terlalu lebar */
 }
 
 .invoice-header p {
