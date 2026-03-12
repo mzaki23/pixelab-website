@@ -836,25 +836,11 @@ async function downloadInvoice() {
         // 1. Clone elemen preview
         const clone = previewElement.cloneNode(true);
         
-        // 2. Ubah semua path gambar menjadi URL absolut
-        const images = clone.querySelectorAll('img');
-        images.forEach(img => {
-            const src = img.getAttribute('src');
-            if (src && src.startsWith('/')) {
-                img.src = window.location.origin + src;
-            }
-        });
-        
-        // 3. Tunggu semua gambar selesai dimuat
-        await Promise.all(Array.from(images).map(img => {
-            if (img.complete) return Promise.resolve();
-            return new Promise(resolve => {
-                img.onload = resolve;
-                img.onerror = resolve; // Tetap lanjutkan meskipun error
-            });
-        }));
+        // 2. Ganti semua gambar eksternal dengan inline SVG (jika ada)
+        //    Jika logo Anda sudah berupa inline SVG, pastikan tidak ada <img>
+        //    Jika masih pakai <img>, Anda perlu menggantinya dengan inline SVG seperti langkah sebelumnya.
 
-        // 4. Buat container tersembunyi dengan lebar tetap (A4 width)
+        // 3. Buat container tersembunyi dengan lebar A4 (794px)
         const hiddenContainer = document.createElement('div');
         hiddenContainer.style.position = 'absolute';
         hiddenContainer.style.left = '-9999px';
@@ -865,19 +851,21 @@ async function downloadInvoice() {
         hiddenContainer.style.margin = '0';
         hiddenContainer.style.boxSizing = 'border-box';
         
+        // Atur gaya clone agar muat persis di container
         clone.style.width = '100%';
         clone.style.maxWidth = 'none';
         clone.style.margin = '0';
         clone.style.padding = '3rem';
         clone.style.boxSizing = 'border-box';
+        clone.style.backgroundColor = '#ffffff';
         
         hiddenContainer.appendChild(clone);
         document.body.appendChild(hiddenContainer);
 
-        // 5. Capture dengan html2canvas (dengan useCORS: true)
+        // 4. Capture dengan html2canvas (pastikan SVG inline tercapture sempurna)
         const canvas = await html2canvas(clone, {
-            scale: 2,
-            useCORS: true,          // Izinkan gambar lintas domain
+            scale: 2,               // resolusi tinggi
+            useCORS: true,
             allowTaint: false,
             logging: false,
             backgroundColor: '#ffffff',
@@ -885,10 +873,10 @@ async function downloadInvoice() {
             width: 794
         });
 
-        // 6. Hapus container tersembunyi
+        // 5. Hapus container tersembunyi
         document.body.removeChild(hiddenContainer);
 
-        // 7. Buat PDF ukuran A4
+        // 6. Buat PDF ukuran A4
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF({
             orientation: 'portrait',
@@ -896,40 +884,49 @@ async function downloadInvoice() {
             format: 'a4'
         });
 
-        const imgData = canvas.toDataURL('image/png');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const pageWidthMm = pdf.internal.pageSize.getWidth();   // 210 mm
+        const pageHeightMm = pdf.internal.pageSize.getHeight(); // 297 mm
 
-        const imgWidth = pdfWidth;
-        const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+        const canvasWidthPx = canvas.width;
+        const canvasHeightPx = canvas.height;
+        
+        // Hitung rasio piksel per mm
+        const pxPerMm = canvasWidthPx / pageWidthMm;
+        const totalHeightMm = canvasHeightPx / pxPerMm;
 
-        // Multi-halaman jika perlu
-        let yOffset = 0;
-        let remainingHeight = imgHeight;
+        let currentMm = 0;
         let pageIndex = 0;
 
-        while (remainingHeight > 0) {
+        while (currentMm < totalHeightMm) {
             if (pageIndex > 0) pdf.addPage();
 
-            const pageHeight = pdfHeight;
-            const sourceHeight = Math.min(remainingHeight, pageHeight);
-            const sourceY = yOffset;
+            const remainingMm = totalHeightMm - currentMm;
+            const thisPageMm = Math.min(remainingMm, pageHeightMm);
+            const thisPagePx = Math.round(thisPageMm * pxPerMm); // tinggi dalam piksel untuk halaman ini
 
+            // Buat canvas baru untuk halaman ini
             const pageCanvas = document.createElement('canvas');
-            pageCanvas.width = canvas.width;
-            pageCanvas.height = (sourceHeight * canvas.width) / pdfWidth;
+            pageCanvas.width = canvasWidthPx;
+            pageCanvas.height = thisPagePx;
             const ctx = pageCanvas.getContext('2d');
-            ctx.drawImage(canvas, 0, sourceY * (canvas.width / pdfWidth), canvas.width, pageCanvas.height, 0, 0, pageCanvas.width, pageCanvas.height);
+            
+            // Gambar bagian yang sesuai dari canvas asli
+            ctx.drawImage(
+                canvas,
+                0, currentMm * pxPerMm,          // source x, y (dalam piksel)
+                canvasWidthPx, thisPagePx,        // source width, height
+                0, 0,                              // dest x, y
+                canvasWidthPx, thisPagePx          // dest width, height
+            );
 
             const pageImgData = pageCanvas.toDataURL('image/png');
-            pdf.addImage(pageImgData, 'PNG', 0, 0, pdfWidth, sourceHeight, undefined, 'FAST');
+            pdf.addImage(pageImgData, 'PNG', 0, 0, pageWidthMm, thisPageMm, undefined, 'FAST');
 
-            yOffset += pageHeight;
-            remainingHeight -= pageHeight;
+            currentMm += thisPageMm;
             pageIndex++;
         }
 
-        // 8. Ambil nomor invoice untuk nama file
+        // 7. Simpan PDF dengan nomor invoice
         const invoiceNumberEl = previewElement.querySelector('.invoice-number strong');
         const invoiceNumber = invoiceNumberEl ? invoiceNumberEl.textContent : 'invoice';
         pdf.save(`${invoiceNumber}.pdf`);
