@@ -659,7 +659,7 @@ async function viewInvoice(id) {
             preview.innerHTML = `
                 <div class="invoice-header">
                     <div>
-                        <div class="invoice-logo">PIXELAB.ID</div>
+                        <img src="/assets/Logo.svg" alt="PIXELAB.ID" class="invoice-logo-img">
                         <p>Creative Digital Agency</p>
                         <p>Jakarta, Indonesia</p>
                         <p>Email: hello@pixelab.id</p>

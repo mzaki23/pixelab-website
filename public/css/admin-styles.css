@@ -736,11 +736,10 @@ body {
     border-bottom: 3px solid var(--color-black);
 }
 
-.invoice-logo {
-    font-family: var(--font-display);
-    font-size: 2rem;
-    letter-spacing: -0.02em;
-    margin-bottom: 0.5rem;
+.invoice-logo-img {
+    height: 40px;        /* sesuaikan dengan kebutuhan */
+    width: auto;
+    object-fit: contain;
 }
 
 .invoice-header p {
