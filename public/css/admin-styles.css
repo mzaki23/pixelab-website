@@ -1083,3 +1083,20 @@ body {
         display: block;
     }
 }
+
+.sidebar-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.sidebar-logo {
+    height: 40px;        /* Bisa disesuaikan */
+    width: auto;
+    object-fit: contain;
+}
+
+.sidebar-header h2 {
+    display: none;       /* Sembunyikan teks lama jika masih ada */
+}

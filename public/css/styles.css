@@ -1178,3 +1178,14 @@ body {
         gap: 0.5rem;
     }
 }
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo-img {
+    height: 40px;        /* Sesuaikan tinggi sesuai kebutuhan */
+    width: auto;         /* Lebar menyesuaikan proporsi asli */
+    display: block;
+}
