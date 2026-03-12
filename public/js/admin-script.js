@@ -838,28 +838,19 @@ async function downloadInvoice() {
         let y = margin;
 
         // === LOAD LOGO ===
-        let logoBase64 = null;
-        try {
-            // Fungsi konversi SVG ke PNG
-            function svgToPng(svgUrl, width, height) {
-                return new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.crossOrigin = 'Anonymous';
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/png'));
-                    };
-                    img.onerror = reject;
-                    img.src = svgUrl;
-                });
-            }
-            logoBase64 = await svgToPng('/assets/Logo.svg', 120, 40); // ukuran pixel
-        } catch (e) {
-            console.warn('Logo gagal dimuat, gunakan teks', e);
-        }
+        // Ganti bagian logoBase64 dengan:
+let logoBase64 = null;
+try {
+    const response = await fetch('/assets/logo.png');
+    const blob = await response.blob();
+    logoBase64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+    });
+} catch (e) {
+    console.warn('Gagal memuat PNG', e);
+}
 
         // === HEADER ===
         if (logoBase64) {
