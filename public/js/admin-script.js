@@ -1,6 +1,6 @@
 // API Configuration
 const API_URL = window.location.hostname === 'localhost' 
-    ? 'https://pixelab-website.vercel.app:3000/api'
+    ? 'http://localhost:3000/api'
     : '/api';
 
 // Authentication
@@ -81,7 +81,8 @@ navItems.forEach(item => {
             'overview': 'Dashboard Overview',
             'portfolio': 'Manage Portfolio',
             'testimonials': 'Manage Testimonials',
-            'messages': 'Contact Messages'
+            'messages': 'Contact Messages',
+            'invoices': 'Manage Invoices'
         };
         pageTitle.textContent = titles[sectionName] || 'Dashboard';
     });
@@ -94,7 +95,8 @@ async function loadDashboardData() {
         loadRecentMessages(),
         loadPortfolioTable(),
         loadTestimonialsList(),
-        loadMessagesList()
+        loadMessagesList(),
+        loadInvoicesTable()
     ]);
 }
 
@@ -435,3 +437,391 @@ window.deletePortfolio = deletePortfolio;
 window.editTestimonial = editTestimonial;
 window.deleteTestimonial = deleteTestimonial;
 window.deleteMessage = deleteMessage;
+
+// ============= INVOICES MANAGEMENT =============
+
+let currentEditingInvoice = null;
+
+async function loadInvoicesTable() {
+    const tbody = document.getElementById('invoicesTableBody');
+    if (!tbody) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/invoices`);
+        const result = await response.json();
+        
+        if (result.success && result.data.length > 0) {
+            tbody.innerHTML = result.data.map(invoice => `
+                <tr>
+                    <td><strong>INV-${invoice.invoiceNumber}</strong></td>
+                    <td>${invoice.clientName}</td>
+                    <td>${invoice.projectName}</td>
+                    <td>Rp ${formatCurrency(invoice.total)}</td>
+                    <td><span class="invoice-status status-${invoice.status}">${invoice.status}</span></td>
+                    <td>${new Date(invoice.invoiceDate).toLocaleDateString('id-ID')}</td>
+                    <td class="table-actions">
+                        <button class="btn btn-small" onclick="viewInvoice('${invoice._id}')">View</button>
+                        <button class="btn btn-small" onclick="editInvoice('${invoice._id}')">Edit</button>
+                        <button class="btn btn-small btn-danger" onclick="deleteInvoice('${invoice._id}')">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem">Belum ada invoice</td></tr>';
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('id-ID').format(amount);
+}
+
+document.getElementById('addInvoiceBtn').addEventListener('click', () => {
+    currentEditingInvoice = null;
+    document.getElementById('invoiceModalTitle').textContent = 'Create Invoice';
+    document.getElementById('invoiceForm').reset();
+    
+    // Set default dates
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('invoiceDate').value = today;
+    
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 30);
+    document.getElementById('invoiceDueDate').value = dueDate.toISOString().split('T')[0];
+    
+    // Reset items to one
+    const itemsContainer = document.getElementById('invoiceItems');
+    itemsContainer.innerHTML = `
+        <div class="invoice-item">
+            <div class="invoice-item-grid">
+                <div class="form-group">
+                    <label>Description *</label>
+                    <input type="text" class="item-description" required>
+                </div>
+                <div class="form-group">
+                    <label>Quantity *</label>
+                    <input type="number" class="item-quantity" min="1" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Price (IDR) *</label>
+                    <input type="number" class="item-price" min="0" step="1000" required>
+                </div>
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="text" class="item-amount" readonly>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    calculateInvoiceTotal();
+    document.getElementById('invoiceModal').classList.add('active');
+});
+
+// Add invoice item
+document.getElementById('addItemBtn').addEventListener('click', () => {
+    const itemsContainer = document.getElementById('invoiceItems');
+    const newItem = document.createElement('div');
+    newItem.className = 'invoice-item';
+    newItem.innerHTML = `
+        <button type="button" class="remove-item-btn" onclick="this.closest('.invoice-item').remove(); calculateInvoiceTotal()">×</button>
+        <div class="invoice-item-grid">
+            <div class="form-group">
+                <label>Description *</label>
+                <input type="text" class="item-description" required>
+            </div>
+            <div class="form-group">
+                <label>Quantity *</label>
+                <input type="number" class="item-quantity" min="1" value="1" required>
+            </div>
+            <div class="form-group">
+                <label>Price (IDR) *</label>
+                <input type="number" class="item-price" min="0" step="1000" required>
+            </div>
+            <div class="form-group">
+                <label>Amount</label>
+                <input type="text" class="item-amount" readonly>
+            </div>
+        </div>
+    `;
+    itemsContainer.appendChild(newItem);
+    attachItemCalculators();
+});
+
+// Calculate item and total
+function attachItemCalculators() {
+    document.querySelectorAll('.invoice-item').forEach(item => {
+        const qty = item.querySelector('.item-quantity');
+        const price = item.querySelector('.item-price');
+        const amount = item.querySelector('.item-amount');
+        
+        const calc = () => {
+            const total = (parseFloat(qty.value) || 0) * (parseFloat(price.value) || 0);
+            amount.value = 'Rp ' + formatCurrency(total);
+            calculateInvoiceTotal();
+        };
+        
+        qty.removeEventListener('input', calc);
+        price.removeEventListener('input', calc);
+        qty.addEventListener('input', calc);
+        price.addEventListener('input', calc);
+    });
+}
+
+function calculateInvoiceTotal() {
+    let subtotal = 0;
+    
+    document.querySelectorAll('.invoice-item').forEach(item => {
+        const qty = parseFloat(item.querySelector('.item-quantity').value) || 0;
+        const price = parseFloat(item.querySelector('.item-price').value) || 0;
+        subtotal += qty * price;
+    });
+    
+    const tax = subtotal * 0.11; // 11% PPN
+    const total = subtotal + tax;
+    
+    document.getElementById('invoiceSubtotal').textContent = 'Rp ' + formatCurrency(subtotal);
+    document.getElementById('invoiceTax').textContent = 'Rp ' + formatCurrency(tax);
+    document.getElementById('invoiceTotal').textContent = 'Rp ' + formatCurrency(total);
+}
+
+// Initial attach
+document.addEventListener('DOMContentLoaded', () => {
+    attachItemCalculators();
+});
+
+// Submit invoice
+document.getElementById('invoiceForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const items = [];
+    document.querySelectorAll('.invoice-item').forEach(item => {
+        items.push({
+            description: item.querySelector('.item-description').value,
+            quantity: parseFloat(item.querySelector('.item-quantity').value),
+            price: parseFloat(item.querySelector('.item-price').value)
+        });
+    });
+    
+    const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+    const tax = subtotal * 0.11;
+    const total = subtotal + tax;
+    
+    const data = {
+        clientName: document.getElementById('invoiceClientName').value,
+        clientEmail: document.getElementById('invoiceClientEmail').value,
+        clientPhone: document.getElementById('invoiceClientPhone').value,
+        clientAddress: document.getElementById('invoiceClientAddress').value,
+        projectName: document.getElementById('invoiceProject').value,
+        invoiceDate: document.getElementById('invoiceDate').value,
+        dueDate: document.getElementById('invoiceDueDate').value,
+        status: document.getElementById('invoiceStatus').value,
+        items: items,
+        subtotal: subtotal,
+        tax: tax,
+        total: total,
+        notes: document.getElementById('invoiceNotes').value
+    };
+    
+    try {
+        const url = currentEditingInvoice ? `${API_URL}/invoices/${currentEditingInvoice}` : `${API_URL}/invoices`;
+        const method = currentEditingInvoice ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            alert('Invoice saved!');
+            closeModal('invoiceModal');
+            loadInvoicesTable();
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Failed to save invoice');
+    }
+});
+
+async function viewInvoice(id) {
+    try {
+        const response = await fetch(`${API_URL}/invoices/${id}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            const invoice = result.data;
+            const preview = document.getElementById('invoicePreviewContent');
+            
+            preview.innerHTML = `
+                <div class="invoice-header">
+                    <div>
+                        <div class="invoice-logo">PIXELAB.ID</div>
+                        <p>Creative Digital Agency</p>
+                        <p>Jakarta, Indonesia</p>
+                        <p>Email: hello@pixelab.id</p>
+                        <p>Phone: +62 812-3456-7890</p>
+                    </div>
+                    <div class="invoice-number">
+                        <h2>INVOICE</h2>
+                        <p><strong>INV-${invoice.invoiceNumber}</strong></p>
+                        <p>Date: ${new Date(invoice.invoiceDate).toLocaleDateString('id-ID')}</p>
+                        <p>Due: ${new Date(invoice.dueDate).toLocaleDateString('id-ID')}</p>
+                        <p><span class="invoice-status status-${invoice.status}">${invoice.status}</span></p>
+                    </div>
+                </div>
+                
+                <div class="invoice-info">
+                    <div class="info-block">
+                        <h4>Bill To:</h4>
+                        <p><strong>${invoice.clientName}</strong></p>
+                        ${invoice.clientEmail ? `<p>${invoice.clientEmail}</p>` : ''}
+                        ${invoice.clientPhone ? `<p>${invoice.clientPhone}</p>` : ''}
+                        ${invoice.clientAddress ? `<p>${invoice.clientAddress}</p>` : ''}
+                    </div>
+                    <div class="info-block">
+                        <h4>Project:</h4>
+                        <p><strong>${invoice.projectName}</strong></p>
+                    </div>
+                </div>
+                
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Qty</th>
+                            <th>Price</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${invoice.items.map(item => `
+                            <tr>
+                                <td>${item.description}</td>
+                                <td>${item.quantity}</td>
+                                <td>Rp ${formatCurrency(item.price)}</td>
+                                <td>Rp ${formatCurrency(item.quantity * item.price)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" style="text-align: right;">Subtotal:</td>
+                            <td>Rp ${formatCurrency(invoice.subtotal)}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="text-align: right;">Tax (11%):</td>
+                            <td>Rp ${formatCurrency(invoice.tax)}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="text-align: right;"><strong>TOTAL:</strong></td>
+                            <td><strong>Rp ${formatCurrency(invoice.total)}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                ${invoice.notes ? `
+                    <div class="invoice-notes">
+                        <h4>Notes:</h4>
+                        <p>${invoice.notes}</p>
+                    </div>
+                ` : ''}
+                
+                <div class="invoice-footer">
+                    <p style="text-align: center; color: #737373;">Thank you for your business!</p>
+                </div>
+            `;
+            
+            document.getElementById('invoicePreviewModal').classList.add('active');
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function editInvoice(id) {
+    try {
+        const response = await fetch(`${API_URL}/invoices/${id}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            currentEditingInvoice = id;
+            const invoice = result.data;
+            
+            document.getElementById('invoiceModalTitle').textContent = 'Edit Invoice';
+            document.getElementById('invoiceClientName').value = invoice.clientName;
+            document.getElementById('invoiceClientEmail').value = invoice.clientEmail || '';
+            document.getElementById('invoiceClientPhone').value = invoice.clientPhone || '';
+            document.getElementById('invoiceClientAddress').value = invoice.clientAddress || '';
+            document.getElementById('invoiceProject').value = invoice.projectName;
+            document.getElementById('invoiceDate').value = invoice.invoiceDate.split('T')[0];
+            document.getElementById('invoiceDueDate').value = invoice.dueDate.split('T')[0];
+            document.getElementById('invoiceStatus').value = invoice.status;
+            document.getElementById('invoiceNotes').value = invoice.notes || '';
+            
+            // Load items
+            const itemsContainer = document.getElementById('invoiceItems');
+            itemsContainer.innerHTML = invoice.items.map((item, index) => `
+                <div class="invoice-item">
+                    ${index > 0 ? '<button type="button" class="remove-item-btn" onclick="this.closest(\'.invoice-item\').remove(); calculateInvoiceTotal()">×</button>' : ''}
+                    <div class="invoice-item-grid">
+                        <div class="form-group">
+                            <label>Description *</label>
+                            <input type="text" class="item-description" value="${item.description}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Quantity *</label>
+                            <input type="number" class="item-quantity" min="1" value="${item.quantity}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Price (IDR) *</label>
+                            <input type="number" class="item-price" min="0" step="1000" value="${item.price}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Amount</label>
+                            <input type="text" class="item-amount" readonly>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            attachItemCalculators();
+            calculateInvoiceTotal();
+            document.getElementById('invoiceModal').classList.add('active');
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function deleteInvoice(id) {
+    if (!confirm('Yakin hapus invoice?')) return;
+    try {
+        const response = await fetch(`${API_URL}/invoices/${id}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (result.success) {
+            alert('Deleted!');
+            loadInvoicesTable();
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function printInvoice() {
+    window.print();
+}
+
+function downloadInvoice() {
+    alert('Download PDF feature - integrate with jsPDF or html2pdf.js for full functionality');
+}
+
+window.viewInvoice = viewInvoice;
+window.editInvoice = editInvoice;
+window.deleteInvoice = deleteInvoice;
+window.printInvoice = printInvoice;
+window.downloadInvoice = downloadInvoice;
+window.calculateInvoiceTotal = calculateInvoiceTotal;

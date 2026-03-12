@@ -26,7 +26,7 @@
             </form>
         </div>
     </div>
-
+ 
     <!-- Dashboard -->
     <div id="dashboard" class="dashboard" style="display: none;">
         <!-- Sidebar -->
@@ -52,12 +52,16 @@
                     <span class="nav-icon">📧</span>
                     <span>Messages</span>
                 </a>
+                <a href="#" class="nav-item" data-section="invoices">
+                    <span class="nav-icon">🧾</span>
+                    <span>Invoices</span>
+                </a>
             </nav>
             <div class="sidebar-footer">
                 <button id="logoutBtn" class="btn btn-secondary">Logout</button>
             </div>
         </aside>
-
+ 
         <!-- Main Content -->
         <main class="main-content">
             <header class="content-header">
@@ -66,7 +70,7 @@
                     <a href="index.html" class="btn btn-secondary" target="_blank">View Website</a>
                 </div>
             </header>
-
+ 
             <!-- Overview Section -->
             <section id="overviewSection" class="content-section">
                 <div class="stats-grid">
@@ -99,19 +103,19 @@
                         </div>
                     </div>
                 </div>
-
+ 
                 <div class="recent-activity">
                     <h2 class="section-title">Recent Messages</h2>
                     <div id="recentMessages" class="activity-list"></div>
                 </div>
             </section>
-
+ 
             <!-- Portfolio Section -->
             <section id="portfolioSection" class="content-section" style="display: none;">
                 <div class="section-actions">
                     <button id="addPortfolioBtn" class="btn btn-primary">+ Add New Project</button>
                 </div>
-
+ 
                 <div class="table-container">
                     <table class="data-table">
                         <thead>
@@ -127,23 +131,47 @@
                     </table>
                 </div>
             </section>
-
+ 
             <!-- Testimonials Section -->
             <section id="testimonialsSection" class="content-section" style="display: none;">
                 <div class="section-actions">
                     <button id="addTestimonialBtn" class="btn btn-primary">+ Add Testimonial</button>
                 </div>
-
+ 
                 <div class="testimonials-list" id="testimonialsList"></div>
             </section>
-
+ 
             <!-- Messages Section -->
             <section id="messagesSection" class="content-section" style="display: none;">
                 <div class="messages-list" id="messagesList"></div>
             </section>
+ 
+            <!-- Invoices Section -->
+            <section id="invoicesSection" class="content-section" style="display: none;">
+                <div class="section-actions">
+                    <button id="addInvoiceBtn" class="btn btn-primary">+ Create Invoice</button>
+                </div>
+ 
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Client</th>
+                                <th>Project</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoicesTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
         </main>
     </div>
-
+ 
     <!-- Modal for Adding/Editing Portfolio -->
     <div id="portfolioModal" class="modal">
         <div class="modal-content">
@@ -192,7 +220,7 @@
             </form>
         </div>
     </div>
-
+ 
     <!-- Modal for Adding/Editing Testimonials -->
     <div id="testimonialModal" class="modal">
         <div class="modal-content">
@@ -218,6 +246,132 @@
                     <button type="submit" class="btn btn-primary">Save Testimonial</button>
                 </div>
             </form>
+        </div>
+    </div>
+ 
+    <!-- Modal for Creating/Editing Invoice -->
+    <div id="invoiceModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="invoiceModalTitle">Create Invoice</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="invoiceForm">
+                <div class="invoice-form-grid">
+                    <div class="form-section">
+                        <h3>Client Information</h3>
+                        <div class="form-group">
+                            <label for="invoiceClientName">Client Name *</label>
+                            <input type="text" id="invoiceClientName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="invoiceClientEmail">Client Email</label>
+                            <input type="email" id="invoiceClientEmail">
+                        </div>
+                        <div class="form-group">
+                            <label for="invoiceClientPhone">Client Phone</label>
+                            <input type="tel" id="invoiceClientPhone">
+                        </div>
+                        <div class="form-group">
+                            <label for="invoiceClientAddress">Client Address</label>
+                            <textarea id="invoiceClientAddress" rows="2"></textarea>
+                        </div>
+                    </div>
+ 
+                    <div class="form-section">
+                        <h3>Invoice Details</h3>
+                        <div class="form-group">
+                            <label for="invoiceProject">Project Name *</label>
+                            <input type="text" id="invoiceProject" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="invoiceDate">Invoice Date *</label>
+                            <input type="date" id="invoiceDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="invoiceDueDate">Due Date *</label>
+                            <input type="date" id="invoiceDueDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="invoiceStatus">Status *</label>
+                            <select id="invoiceStatus" required>
+                                <option value="draft">Draft</option>
+                                <option value="sent">Sent</option>
+                                <option value="paid">Paid</option>
+                                <option value="overdue">Overdue</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+ 
+                <div class="form-section">
+                    <h3>Items</h3>
+                    <div id="invoiceItems">
+                        <div class="invoice-item">
+                            <div class="invoice-item-grid">
+                                <div class="form-group">
+                                    <label>Description *</label>
+                                    <input type="text" class="item-description" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Quantity *</label>
+                                    <input type="number" class="item-quantity" min="1" value="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Price (IDR) *</label>
+                                    <input type="number" class="item-price" min="0" step="1000" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Amount</label>
+                                    <input type="text" class="item-amount" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" id="addItemBtn">+ Add Item</button>
+                </div>
+ 
+                <div class="invoice-summary">
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span id="invoiceSubtotal">Rp 0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax (11%):</span>
+                        <span id="invoiceTax">Rp 0</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total:</span>
+                        <span id="invoiceTotal">Rp 0</span>
+                    </div>
+                </div>
+ 
+                <div class="form-group">
+                    <label for="invoiceNotes">Notes / Terms</label>
+                    <textarea id="invoiceNotes" rows="3" placeholder="Payment terms, thank you note, etc."></textarea>
+                </div>
+ 
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Invoice</button>
+                </div>
+            </form>
+        </div>
+    </div>
+ 
+    <!-- Modal for Invoice Preview/Print -->
+    <div id="invoicePreviewModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Invoice Preview</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="invoice-preview-actions">
+                <button class="btn btn-primary" onclick="printInvoice()">🖨️ Print / Save PDF</button>
+                <button class="btn btn-secondary" onclick="downloadInvoice()">📥 Download</button>
+            </div>
+            <div id="invoicePreviewContent" class="invoice-preview"></div>
         </div>
     </div>
 
