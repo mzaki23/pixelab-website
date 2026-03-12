@@ -19,3 +19,6 @@ npm-debug.log*
 Thumbs.db
 
 index copy.js
+
+api-helper.js
+config.js

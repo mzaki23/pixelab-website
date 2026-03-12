@@ -1,7 +1,7 @@
 // API Configuration
-const API_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:3000/api'   // Perbaiki dari sebelumnya yang salah (https dan port 3000)
-    : '/api';
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000/api'  // Untuk Node.js local server
+    : '/api';                       // Production Vercel
 
 // Portfolio Data (akan di-load dari API)
 let portfolioData = [];
@@ -80,9 +80,16 @@ async function loadPortfolio(filter = 'all') {
             throw new Error(result.error);
         }
     } catch (error) {
-        console.error('Error loading portfolio:', error);
-        portfolioGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: #ef4444;">Failed to load portfolio. Please try again later.</div>';
+    console.error('Error loading portfolio:', error);
+    
+    if (!navigator.onLine) {
+        portfolioGrid.innerHTML = '<div>No internet connection</div>';
+    } else if (error.message.includes('fetch')) {
+        portfolioGrid.innerHTML = '<div>Cannot connect to server</div>';
+    } else {
+        portfolioGrid.innerHTML = '<div>Failed to load. Please try again.</div>';
     }
+}
 }
 
 // Portfolio Filter
