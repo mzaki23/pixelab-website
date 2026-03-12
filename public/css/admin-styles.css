@@ -93,6 +93,24 @@ body {
 }
 
 /* Sidebar */
+
+.sidebar-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.sidebar-logo {
+    height: 40px;        /* Bisa disesuaikan */
+    width: auto;
+    object-fit: contain;
+}
+
+.sidebar-header h2 {
+    display: none;       /* Sembunyikan teks lama jika masih ada */
+}
+
 .sidebar {
     background: var(--color-black);
     color: var(--color-white);
@@ -101,17 +119,9 @@ body {
     border-right: 3px solid var(--color-gray-900);
 }
 
-.sidebar-header {
-    padding: 2rem;
-    border-bottom: 2px solid var(--color-gray-800);
-}
 
-.sidebar-header h2 {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-    letter-spacing: -0.02em;
-}
+
+
 
 .sidebar-subtitle {
     font-family: var(--font-mono);
@@ -1084,19 +1094,3 @@ body {
     }
 }
 
-.sidebar-header {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-}
-
-.sidebar-logo {
-    height: 40px;        /* Bisa disesuaikan */
-    width: auto;
-    object-fit: contain;
-}
-
-.sidebar-header h2 {
-    display: none;       /* Sembunyikan teks lama jika masih ada */
-}
