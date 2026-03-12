@@ -911,6 +911,56 @@ async function sendInvoiceEmail() {
     }
 }
 
+// Mobile menu toggle
+const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+const sidebar = document.querySelector('.sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+if (mobileMenuToggle) {
+    mobileMenuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+        if (sidebarOverlay) {
+            sidebarOverlay.classList.toggle('active');
+        }
+        // Prevent body scroll when sidebar open
+        document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+    });
+}
+
+// Close sidebar when clicking overlay
+if (sidebarOverlay) {
+    sidebarOverlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    });
+}
+
+// Close sidebar when clicking a nav link (on mobile)
+const navLinks = document.querySelectorAll('.nav-item');
+navLinks.forEach(link => {
+    link.addEventListener('click', () => {
+        if (window.innerWidth <= 968) {
+            sidebar.classList.remove('active');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.remove('active');
+            }
+            document.body.style.overflow = '';
+        }
+    });
+});
+
+// Handle window resize
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 968) {
+        sidebar.classList.remove('active');
+        if (sidebarOverlay) {
+            sidebarOverlay.classList.remove('active');
+        }
+        document.body.style.overflow = '';
+    }
+});
+
 window.viewInvoice = viewInvoice;
 window.editInvoice = editInvoice;
 window.deleteInvoice = deleteInvoice;
@@ -918,3 +968,4 @@ window.printInvoice = printInvoice;
 window.downloadInvoice = downloadInvoice;
 window.sendInvoiceEmail = sendInvoiceEmail;
 window.calculateInvoiceTotal = calculateInvoiceTotal;
+

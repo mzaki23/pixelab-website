@@ -65,11 +65,12 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="content-header">
-                <h1 id="pageTitle">Dashboard Overview</h1>
-                <div class="header-actions">
-                    <a href="index.html" class="btn btn-secondary" target="_blank">View Website</a>
-                </div>
-            </header>
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu">☰</button>
+    <h1 id="pageTitle">Dashboard Overview</h1>
+    <div class="header-actions">
+        <a href="index.html" class="btn btn-secondary" target="_blank">View Website</a>
+    </div>
+</header>
  
             <!-- Overview Section -->
             <section id="overviewSection" class="content-section">
@@ -381,5 +382,8 @@
         <!-- jsPDF for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Overlay untuk mobile -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 </body>
 </html>
