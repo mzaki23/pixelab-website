@@ -93,26 +93,6 @@ body {
 }
 
 /* Sidebar */
-
-.sidebar-header {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-    padding: 2rem;               /* ← tambahkan padding */
-    border-bottom: 2px solid var(--color-gray-800); /* ← tambahkan border */
-}
-
-.sidebar-logo {
-    height: 40px;        /* Bisa disesuaikan */
-    width: auto;
-    object-fit: contain;
-}
-
-.sidebar-header h2 {
-    display: none;       /* Sembunyikan teks lama jika masih ada */
-}
-
 .sidebar {
     background: var(--color-black);
     color: var(--color-white);
@@ -121,9 +101,17 @@ body {
     border-right: 3px solid var(--color-gray-900);
 }
 
+.sidebar-header {
+    padding: 2rem;
+    border-bottom: 2px solid var(--color-gray-800);
+}
 
-
-
+.sidebar-header h2 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
 
 .sidebar-subtitle {
     font-family: var(--font-mono);
@@ -852,69 +840,6 @@ body {
 }
 
 
-/* Tampilan mobile */
-@media (max-width: 768px) {
-    .invoice-preview {
-        padding: 1.5rem;
-        font-size: 12px;
-        max-width: 100%;
-    }
-    
-    /* Ubah layout header menjadi vertikal */
-    .invoice-header {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    .invoice-number {
-        text-align: left;
-    }
-    
-    /* Informasi client dan project vertikal */
-    .invoice-info {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    /* Tabel bisa di-scroll horizontal jika terlalu lebar */
-    .invoice-table {
-        display: block;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        white-space: nowrap;  /* Agar kolom tidak turun */
-        font-size: 12px;
-    }
-    
-    .invoice-table th,
-    .invoice-table td {
-        padding: 0.5rem;
-        min-width: 100px;  /* Minimum lebar kolom */
-    }
-    
-    /* Penyesuaian lainnya */
-    .invoice-summary {
-        margin-top: 1.5rem;
-    }
-    
-    .invoice-footer {
-        margin-top: 1.5rem;
-    }
-}
-
-
-
-/* Tampilan tablet */
-@media (min-width: 769px) and (max-width: 968px) {
-    .invoice-preview {
-        padding: 2rem;
-    }
-    
-    .invoice-table {
-        font-size: 13px;
-    }
-
-    
-}
 
 @media print {
     /* Sembunyikan semua elemen yang tidak diperlukan */
@@ -1097,16 +1022,5 @@ body {
 @media (max-width: 968px) {
     .sidebar-overlay.active {
         display: block;
-    }
-}
-
-/* Paksa tampilan desktop untuk layar > 968px */
-@media (min-width: 969px) {
-    .dashboard {
-        grid-template-columns: 280px 1fr !important;
-    }
-    .sidebar {
-        position: relative !important;
-        left: 0 !important;
     }
 }
